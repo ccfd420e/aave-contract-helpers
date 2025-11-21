@@ -1,4 +1,4 @@
-import { providers } from 'ethers';
+import { providers, CallOverrides } from 'ethers';
 import BaseService from '../commons/BaseService';
 import { UiIncentiveDataProviderValidator } from '../commons/validators/methodValidators';
 import { isEthAddress } from '../commons/validators/paramValidators';
@@ -23,18 +23,23 @@ export * from './types';
 export interface UiIncentiveDataProviderInterface {
   getFullReservesIncentiveData: (
     args: UserReservesHelperInput,
+    overrides?: CallOverrides,
   ) => Promise<FullReservesIncentiveDataResponse>;
   getReservesIncentivesData: (
     args: ReservesHelperInput,
+    overrides?: CallOverrides,
   ) => Promise<ReservesIncentiveData[]>;
   getUserReservesIncentivesData: (
     args: UserReservesHelperInput,
+    overrides?: CallOverrides,
   ) => Promise<UserReservesIncentivesData[]>;
   getReservesIncentivesDataHumanized: (
     args: ReservesHelperInput,
+    overrides?: CallOverrides,
   ) => Promise<ReservesIncentiveDataHumanized[]>;
   getUserReservesIncentivesDataHumanized: (
     args: UserReservesHelperInput,
+    overrides?: CallOverrides,
   ) => Promise<UserReservesIncentivesDataHumanized[]>;
 }
 export interface FeedResultSuccessful {
@@ -52,8 +57,7 @@ export interface UiIncentiveDataProviderContext {
 
 export class UiIncentiveDataProvider
   extends BaseService<UiIncentiveDataProviderV3>
-  implements UiIncentiveDataProviderInterface
-{
+  implements UiIncentiveDataProviderInterface {
   readonly uiIncentiveDataProviderAddress: string;
 
   readonly chainId: number;
@@ -81,6 +85,7 @@ export class UiIncentiveDataProvider
     @isEthAddress('user')
     @isEthAddress('lendingPoolAddressProvider')
     { user, lendingPoolAddressProvider }: UserReservesHelperInput,
+    overrides?: CallOverrides,
   ): Promise<FullReservesIncentiveDataResponse> {
     const uiIncentiveContract = this.getContractInstance(
       this.uiIncentiveDataProviderAddress,
@@ -89,6 +94,7 @@ export class UiIncentiveDataProvider
     return uiIncentiveContract.getFullReservesIncentiveData(
       lendingPoolAddressProvider,
       user,
+      overrides,
     );
   }
 
@@ -99,6 +105,7 @@ export class UiIncentiveDataProvider
   public async getReservesIncentivesData(
     @isEthAddress('lendingPoolAddressProvider')
     { lendingPoolAddressProvider }: ReservesHelperInput,
+    overrides?: CallOverrides,
   ): Promise<ReservesIncentiveData[]> {
     const uiIncentiveContract = this.getContractInstance(
       this.uiIncentiveDataProviderAddress,
@@ -106,6 +113,7 @@ export class UiIncentiveDataProvider
 
     return uiIncentiveContract.getReservesIncentivesData(
       lendingPoolAddressProvider,
+      overrides,
     );
   }
 
@@ -118,6 +126,7 @@ export class UiIncentiveDataProvider
     @isEthAddress('user')
     @isEthAddress('lendingPoolAddressProvider')
     { user, lendingPoolAddressProvider }: UserReservesHelperInput,
+    overrides?: CallOverrides,
   ): Promise<UserReservesIncentivesData[]> {
     const uiIncentiveContract = this.getContractInstance(
       this.uiIncentiveDataProviderAddress,
@@ -126,6 +135,7 @@ export class UiIncentiveDataProvider
     return uiIncentiveContract.getUserReservesIncentivesData(
       lendingPoolAddressProvider,
       user,
+      overrides,
     );
   }
 
@@ -133,9 +143,10 @@ export class UiIncentiveDataProvider
   public async getReservesIncentivesDataHumanized(
     @isEthAddress('lendingPoolAddressProvider')
     { lendingPoolAddressProvider }: ReservesHelperInput,
+    overrides?: CallOverrides,
   ): Promise<ReservesIncentiveDataHumanized[]> {
     const response: ReservesIncentiveData[] =
-      await this.getReservesIncentivesData({ lendingPoolAddressProvider });
+      await this.getReservesIncentivesData({ lendingPoolAddressProvider }, overrides);
 
     return response.map(r => ({
       id: `${this.chainId}-${r.underlyingAsset}-${lendingPoolAddressProvider}`.toLowerCase(),
@@ -150,12 +161,13 @@ export class UiIncentiveDataProvider
     @isEthAddress('user')
     @isEthAddress('lendingPoolAddressProvider')
     { user, lendingPoolAddressProvider }: UserReservesHelperInput,
+    overrides?: CallOverrides,
   ): Promise<UserReservesIncentivesDataHumanized[]> {
     const response: UserReservesIncentivesData[] =
       await this.getUserReservesIncentivesData({
         user,
         lendingPoolAddressProvider,
-      });
+      }, overrides);
 
     return response.map(r => ({
       id: `${this.chainId}-${user}-${r.underlyingAsset}-${lendingPoolAddressProvider}`.toLowerCase(),
